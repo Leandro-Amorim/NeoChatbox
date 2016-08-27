@@ -13,10 +13,37 @@
       #messages li:nth-child(odd) { background: #eee; }
     </style>
   </head>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+
   <body>
     <ul id="messages"></ul>
     <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
+      <input id="m" autocomplete="off" /><button type="submit">Send</button>
     </form>
   </body>
+
+<script>
+  var socket = io();
+  var nick = prompt("Por favor digite seu apelido", "");
+
+  $('form').submit(function(){
+    var array = [nick, $('#m').val()];
+    socket.emit('chat message',array);
+    $('#m').val('');
+    return false;
+  });
+  socket.on('chat message', function(array){
+
+if (array[1].endsWith(".png") == true || array[1].endsWith(".jpg") == true)
+{
+	$('#messages').append($('<li>').html("<b>"+array[0]+": </b> <div style='max-width:500px;'> <img src='"+array[1]+"' alt='Imagem'></div>"));
+}
+else
+{
+	$('#messages').append($('<li>').html("<b>"+array[0]+": </b>"+array[1]));
+}
+});
+</script>
 </html>
