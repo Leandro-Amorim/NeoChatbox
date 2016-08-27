@@ -1,0 +1,8 @@
+{
+  "name": "NeoChatboxServer",
+  "version": "0.0.1",
+  "description": "Server",
+  "dependencies": {
+    "express": "^4.10.2"
+  }
+}
