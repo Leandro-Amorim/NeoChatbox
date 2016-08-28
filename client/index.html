@@ -28,22 +28,31 @@
   var socket = io();
   var nick = prompt("Por favor digite seu apelido", "");
 
+  function create_request_message_json(user, message) {
+    return '{ "type":"post_message", "username": "' + user + '", "messageText": "' + message + '" }';
+  }
+  function create_request_json(request_type) {
+    return '{ "type": "' + request_type + '" }';
+  }
+
   $('form').submit(function(){
-    var array = [nick, $('#m').val()];
-    socket.emit('chat message',array);
+
+    var json_string = create_request_message_json(nick, $("#m").val());
+    socket.emit('chat_data', json_string);
     $('#m').val('');
     return false;
   });
-  socket.on('chat message', function(array){
-
-if (array[1].endsWith(".png") == true || array[1].endsWith(".jpg") == true)
+  socket.on('chat_data', function(json_message) {
+var json_object = JSON.parse(json_message);
+if (json_object.messageText.endsWith(".png") == true || json_object.messageText.endsWith(".jpg") == true)
 {
-	$('#messages').append($('<li>').html("<b>"+array[0]+": </b> <div style='max-width:500px;'> <img src='"+array[1]+"' alt='Imagem'></div>"));
+	$('#messages').append($('<li>').html("<b>"+json_object.username+": </b> <div style='max-width:500px;'> <img src='"+json_object.messageText+"' alt='Imagem'></div>"));
 }
 else
 {
-	$('#messages').append($('<li>').html("<b>"+array[0]+": </b>"+array[1]));
+	$('#messages').append($('<li>').html("<b>"+json_object.username+": </b>"+json_object.messageText));
 }
 });
+  socket.emit("chat_data", create_request_json("get_messages"))
 </script>
 </html>
