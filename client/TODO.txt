@@ -1,0 +1,23 @@
+﻿http://timeago.yarp.com/
+
+
+Configurações
+
+-Mensagens
+Tempo Relativo
+Mostrar Avatares
+Mostrar Data
+Ocultar botão de edição
+Mostrar imagens diretamente no chat
+Mostrar videos diretamente no chat
+
+-Notificações
+Notificar apenas ao citarem meu nome
+Notificar-me sempre
+Nunca me Notificar
+
+-Audio
+Notificação Sonora de nova mensagem
+Link do som de notificação de nova mensagem (com opção de redefinir para padrão)
+Notificação Sonora de usuário online
+Link do som de notificação de nova mensagem (com opção de redefinir para padrão)

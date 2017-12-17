@@ -1,58 +1,240 @@
-<!doctype html>
-<html>
-  <head>
-    <title>Socket.IO chat</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-    </style>
-  </head>
+<!DOCTYPE html>
 
-<script src="/socket.io/socket.io.js"></script>
-<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+<head>
+    <title>Chat</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/css/materialize.min.css">
+    <link rel="stylesheet" href="css/estilo.css"> </head>
 
-  <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button type="submit">Send</button>
+<body>
+    <ul id="user-column" class="side-nav fixed" style="transform: translateX(-100%);">
+        <li>
+            <div class="userView"> <img class="background" src="https://tgmbrasil.com.br/styles/canvas/theme/images/backgrounds/background.jpg"> <img class="circle userView-avatar" id="user_view">
+                <div class="white-text name userView-container"> <span class="userView-name">Led</span>
+                    <br> <em class="userView-rank">Carregando...</em> </div>
+            </div>
+        </li>
+        <li><a class="subheader">Usuários Ativos</a></li>
+    </ul>
+    <a href="#" id="user-column-mobile-button" data-activates="user-column" class="button-collapse" style="position:absolute"> <img src="img/group.svg"></img>
+    </a>
+    <div class="main grey lighten-4">
+        <div class="main-top darken-3 z-depth-1" style="background-color: rgb(73,10,61)"> <span id="chat-header-text">
+              <marquee class="promise-list"> <em>"O chat novo vai ser terminado esse ano"</em> - <b>Markito, 2016</b> | <em>"Eu ainda vou terminar um jogo em Assembly."</em> - <b>SuperBomber, 2016</b> </marquee>
+            </span>
+            <div class="fixed-action-btn click-to-toggle options-button">
+                <a class="btn-floating btn-large teal lighten-2"> <i class="material-icons">menu</i> </a>
+                <ul>
+                    <li><a href="#modaloptions" onclick="modalOpened();" class="btn-floating red modal-trigger"><i class="material-icons">insert_chart</i></a></li>
+                    <li><a class="btn-floating yellow darken-1"><i class="material-icons">format_quote</i></a></li>
+                    <li><a class="btn-floating green"><i class="material-icons">publish</i></a></li>
+                    <li><a class="btn-floating blue"><i class="material-icons">attach_file</i></a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="message-column" id="message_list_column">
+            <ul class="collection" id="message-collection"> </ul>
+        </div>
+        <div class="main-bottom darken-3 z-depth-1" style="background-color: rgb(73,10,61);">
+            <div class="row">
+                <form id="formdefault">
+                    <div class="input-field col s11" style="width:95%;">
+                        <input id="inputdefault" type="text" autocomplete="off">
+                        <label for="message">Mensagem</label>
+                    </div>
+                </form>
+                <div class="col s1">
+                    <a class="btn-floating btn-large waves-effect dropdown-button waves-light light-blue darken-3 emoji-button" data-beloworigin="false" data-activates="emoticons-dropdown" id="Robson"> <img src="img/emoji.svg" alt="Emoji"> </a>
+                    <ul id="emoticons-dropdown" class="dropdown-content blue-grey darken-4"> <img src="img/emoji.svg"></img>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- <script type="text/javascript" src="js/image-upload.js"></script> -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.7/js/materialize.min.js"></script> -->
+    <script src="js/materialize.js"></script>
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+    <script src="https://use.fontawesome.com/c35e7d92b0.js"></script>
+    <script src="js/init.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mustache.js/2.2.1/mustache.min.js"></script>
+    <script type="text/javascript" src="js/configmenu.js"></script>
+    <script type="text/javascript" src="js/jquery.timeago.js"></script>
+    <script type="text/javascript" src="js/bbCodeParser.min.js"></script>
+    <script type="text/javascript" src="js/users.js"></script>
+    <script type="text/javascript" src="js/default.js"></script>
+    <script type="text/javascript" src="js/messages.js"></script>
+    <script type="text/javascript" src="js/user_on.js"></script>
+    <script type="text/javascript" src="js/emoticons.js"></script>
+    <script type="text/javascript" src="js/notifications.js"></script>
+    <script type="text/javascript" src="js/notifications.js"></script>
+    <script type="text/javascript" src="http://materializecss.com/templates/starter-template/js/init.js"></script>
+</body>
+
+<template name="message">
+    <li class="collection-item avatar message"> <img src={{_avatar}} alt="" class="circle message-avatar">
+        <div class="message-header"> <span class="title message-name" style={{_css_style}}>{{_user}}</span> <span date = {{_datestring}} title =  {{_datehint}} class="message-hour">{{_date}}</span> </div>
+        <div class="message-content">
+            <span class="message-line {{_class}}" id={{_msgid}} onmouseenter="document.getElementById('btn_'+this.id).style.opacity=1;" onmouseout="document.getElementById('btn_'+this.id).style.opacity=0;"> {{_text}} </span>
+
+            <span class="message-options">
+
+            <a id=btn_{{_msgid}} onmouseenter="this.style.opacity=1;"  onmouseout="this.style.opacity=0;" class='dropdown-button message-options-button btn btn-floating waves-effect waves-light' href='#' data-activates=drop_{{_msgid}}>
+              <i class="material-icons" style="position:absolute;top:0;bottom:0;left:0;font-size:1.1rem; line-height:21px;">settings</i>
+            </a>
+
+
+            <ul id=drop_{{_msgid}} class='dropdown-content'>
+              <li><a href="#!">Editar</a></li>
+              <li><a href="#!">Excluir</a></li>
+            </ul>
+
+          </span>
+
+          <br>
+
+        </div>
+    </li>
+</template>
+
+<template name="message-line">
+
+  <span class="message-line {{_class}}" id={{_msgid}} onmouseenter="document.getElementById('btn_'+this.id).style.opacity=1;" onmouseout="document.getElementById('btn_'+this.id).style.opacity=0;"> {{_text}} </span>
+
+  <span class="message-options">
+
+  <a id=btn_{{_msgid}} onmouseenter="this.style.opacity=1;"  onmouseout="this.style.opacity=0;" class='dropdown-button message-options-button btn btn-floating waves-effect waves-light' href='#' data-activates=drop_{{_msgid}}>
+    <i class="material-icons" style="position:absolute;top:0;bottom:0;left:0;font-size:1.1rem; line-height:21px;">settings</i>
+  </a>
+
+
+  <ul id=drop_{{_msgid}} class='dropdown-content'>
+    <li><a href="#!">Editar</a></li>
+    <li><a href="#!">Excluir</a></li>
+  </ul>
+
+</span>
+
+<br>
+
+</template>
+
+<template name="user-list-child">
+    <li class="user-list-child">
+        <a class="waves-effect" href="#!"> <img src={{_avatar}} alt="" class="circle user-list-avatar"> <span class="user-list-name" style={{_css_style}}>{{_user}}</span> <i class="small secondary-content material-icons status-icon {{_class}}" name="status-icon" style="position:relative;top:-5px;float:right;">&#9679;<img src="img/pencil.gif" class="is-typing-icon" style="width:1.8rem;height:1.8rem; opacity:0;" alt=""></i> </a>
+    </li>
+</template>
+<div id="modaloptions" class="modal modal-fixed-footer">
+    <div class="modal-content">
+        <div class="row">
+            <div class="col s12 m4 config-menu hide-on-small-only">
+                <div class="collection" style="width:30%;"> <a href="#!" onclick="changeConfigTab(this)" class="collection-item active">Mensagens</a> <a href="#!" onclick="changeConfigTab(this)" class="collection-item">Notificações</a> <a href="#!" onclick="changeConfigTab(this)" class="collection-item">Estilo</a> <a href="#!" onclick="changeConfigTab(this)" class="collection-item">Áudio</a> </div>
+            </div>
+            <!-- MENU QUE SÓ APARECE NO MOBILE -->
+            <div class="col s12 m4 config-menu-mobile hide-on-med-and-up">
+                <div class="collection"> <a href="#!" onclick="changeConfigTab(this)" class="collection-item active">Mensagens</a> <a href="#!" onclick="changeConfigTab(this)" class="collection-item">Notificações</a> <a href="#!" onclick="changeConfigTab(this)" class="collection-item">Estilo</a> <a href="#!" onclick="changeConfigTab(this)" class="collection-item">Áudio</a> </div>
+            </div>
+            <!-- ///////// -->
+            <div class="col s8 config-options"> </div>
+        </div>
+    </div>
+    <div class="modal-footer"> <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat" onclick="applyConfig()">Aplicar</a> <a href="#!" class=" modal-action modal-close waves-effect waves-green btn-flat">Cancelar</a> </div>
+</div>
+<!-- Templates das páginas de configurações -->
+<template name="config-message">
+    <h4>Mensagens</h4>
+    <input type="checkbox" class="filled-in" id="config-useRelativeTime" />
+    <label for="config-useRelativeTime" style="color:#000000;">Utilizar tempo relativo nas mensagens.</label>
+    <br>
+    <input type="checkbox" class="filled-in" id="config-showAvatar" />
+    <label for="config-showAvatar" style="color:#000000;">Mostrar avatar nas mensagens.</label>
+    <br>
+    <input type="checkbox" class="filled-in" id="config-showDate" />
+    <label for="config-showDate" style="color:#000000;">Mostrar horário nas mensagens.</label>
+    <br>
+    <input type="checkbox" class="filled-in" id="config-showEditButton" />
+    <label for="config-showEditButton" style="color:#000000;">Mostrar botão de edição nas mensagens.</label>
+    <br>
+    <input type="checkbox" class="filled-in" id="config-showImages" />
+    <label for="config-showImages" style="color:#000000;">Mostrar imagens diretamente no chat.</label>
+    <br>
+    <input type="checkbox" class="filled-in" id="config-showVideos" />
+    <label for="config-showVideos" style="color:#000000;">Mostrar vídeos diretamente no chat.</label>
+    <br>
+    <p class="caption">Digite os usuários que você deseja ignorar e aperte Enter. Deixe em branco se deseja receber mensagens de todos os membros.</p>
+    <div class="chips" id="config-blockedUsers"></div>
+</template>
+<template name="config-notifications">
+    <h4>Notificações</h4>
+    <p class="caption">Selecione a opção desejada para as notificações em área de trabalho.</p>
+    <div class="input-field col s12">
+        <select id="config-notifyOptions">
+            <option value="" disabled selected>Selecione sua opção</option>
+            <option value="1">Sempre me notificar</option>
+            <option value="2">Notificar-me apenas quando eu for citado</option>
+            <option value="3">Nunca me notificar</option>
+        </select>
+    </div>
+</template>
+<template name="config-style">
+    <h4>Estilo</h4>
+    <div theme-name="Pure Black" class="card theme-option">
+        <div class="card-image"> <img class="materialboxed" src="http://image.prntscr.com/image/7906805e74fc4f6f8b397405ff3a4920.png"> </div>
+        <div class="card-content">
+            <p>Tema Pure Black.</p>
+        </div>
+        <div class="card-action"> <a href="#">Selecionar</a> </div>
+    </div>
+    <div theme-name="Perfect White" class="card theme-option">
+        <div class="card-image"> <img class="materialboxed" src="http://image.prntscr.com/image/7906805e74fc4f6f8b397405ff3a4920.png"> </div>
+        <div class="card-content">
+            <p>Tema Perfect White.</p>
+        </div>
+        <div class="card-action"> <a href="#">Selecionar</a> </div>
+    </div>
+</template>
+<template name="config-audio">
+    <h4>Áudio</h4>
+    <input type="checkbox" class="filled-in" id="config-playNewMessageSound" checked="checked" />
+    <label for="config-playNewMessageSound" style="color:#000000;">Reproduzir som quando uma nova mensagem for recebida.</label>
+    <br>
+    <p class="caption">Insira o endereço do áudio a ser reproduzido quando uma nova mensagem for recebida.</p>
+    <form class="col s12">
+        <div class="row valign-wrapper">
+            <div class="input-field col s10"> <i class="material-icons prefix">volume_up</i>
+                <input id="config-newMessageSoundLink" type="text" autocomplete="off"> </div>
+            <div class="col s2"> <a class="waves-effect waves-light btn" style="padding-left: 0px;padding-right: 0px;width: 76px;" onclick="document.getElementById('config-newMessageSoundLink').value = 'https://discordapp.com/assets/dd920c06a01e5bb8b09678581e29d56f.mp3';">PADRÃO</a> </div>
+        </div>
     </form>
-  </body>
+    <br>
+    <br>
+    <input type="checkbox" class="filled-in" id="config-playNewUserSound" checked="checked" />
+    <label for="config-playNewUserSound" style="color:#000000;">Reproduzir som quando um novo usuário entrar no chat.</label>
+    <br>
+    <p class="caption">Insira o endereço do áudio a ser reproduzido quando um novo usuário entrar no chat.</p>
+    <form class="col s12">
+        <div class="row valign-wrapper">
+            <div class="input-field col s10"> <i class="material-icons prefix">volume_up</i>
+                <input id="config-newUserSoundLink" type="text" autocomplete="off"> </div>
+            <div class="col s2"> <a class="waves-effect waves-light btn" style="padding-left: 0px;padding-right: 0px;width: 76px;" onclick="document.getElementById('config-newUserSoundLink').value = 'https://discordapp.com/assets/5dd43c946894005258d85770f0d10cff.mp3';">PADRÃO</a> </div>
+        </div>
+    </form>
+</template>
+<template name="emoticon-template"> <img src={{url}} class="emoticon" alt={{value}}></img>
+</template>
+<template name="error-message">
+    <div class="row">
+        <div class="col s12">
+            <div class="card white" style="padding:30px">
+                <div class="card-content black-text"> <img src="/../../ic/alert-circle.svg" style="width:40px; height:40px;"></img> <span class="card-title"><b>{{status}}</b></span>
+                    <p>{{text}}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</template>
 
-<script>
-  var socket = io();
-  var nick = prompt("Por favor digite seu apelido", "");
-
-  function create_request_message_json(user, message) {
-    return '{ "type":"post_message", "username": "' + user + '", "messageText": "' + message + '" }';
-  }
-  function create_request_json(request_type) {
-    return '{ "type": "' + request_type + '" }';
-  }
-
-  $('form').submit(function(){
-
-    var json_string = create_request_message_json(nick, $("#m").val());
-    socket.emit('chat_data', json_string);
-    $('#m').val('');
-    return false;
-  });
-  socket.on('chat_data', function(json_message) {
-var json_object = JSON.parse(json_message);
-if (json_object.messageText.endsWith(".png") == true || json_object.messageText.endsWith(".jpg") == true)
-{
-	$('#messages').append($('<li>').html("<b>"+json_object.username+": </b> <div style='max-width:500px;'> <img src='"+json_object.messageText+"' alt='Imagem'></div>"));
-}
-else
-{
-	$('#messages').append($('<li>').html("<b>"+json_object.username+": </b>"+json_object.messageText));
-}
-});
-  socket.emit("chat_data", create_request_json("get_messages"))
-</script>
 </html>
